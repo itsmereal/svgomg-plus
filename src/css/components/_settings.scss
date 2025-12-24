@@ -101,3 +101,17 @@
     }
   }
 }
+
+.experimental-tag {
+  display: inline-block;
+  background-color: #ff9800;
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 3px;
+  margin-left: 6px;
+  vertical-align: middle;
+  letter-spacing: 0.5px;
+}

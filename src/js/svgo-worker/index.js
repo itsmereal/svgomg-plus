@@ -63,10 +63,15 @@ const parsePathBounds = (d) => {
 
   for (const cmd of commands) {
     const type = cmd[0];
+    // Improved regex to handle SVG path number formats:
+    // - Negative numbers: -123
+    // - Decimals: .5, 0.5, 123.456
+    // - Scientific notation: 1e-5, 1E+10
+    // - Numbers that run together: 1.2.3 should be [1.2, .3]
     const args = cmd
       .slice(1)
       .trim()
-      .match(/-?[\d.]+(?:e[+-]?\d+)?/gi);
+      .match(/-?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?/gi);
     const nums = args ? args.map(Number) : [];
 
     const isRelative = type === type.toLowerCase();
@@ -369,46 +374,13 @@ const createTrimWhitespacePlugin = () => {
               const contentHeight = maxY - minY;
 
               if (contentWidth > 0 && contentHeight > 0) {
-                // Get current dimensions for aspect ratio
-                let currentWidth;
-                let currentHeight;
-
-                if (node.attributes.viewBox) {
-                  const vb = node.attributes.viewBox
-                    .split(/[\s,]+/)
-                    .map(Number);
-                  currentWidth = vb[2];
-                  currentHeight = vb[3];
-                } else if (node.attributes.width && node.attributes.height) {
-                  currentWidth = Number.parseFloat(node.attributes.width);
-                  currentHeight = Number.parseFloat(node.attributes.height);
-                }
-
                 // Set new viewBox to content bounds
                 node.attributes.viewBox = `${minX} ${minY} ${contentWidth} ${contentHeight}`;
 
-                // Update width/height proportionally if they exist
-                if (
-                  node.attributes.width !== undefined &&
-                  currentWidth &&
-                  currentHeight
-                ) {
-                  const scale = contentWidth / currentWidth;
-                  node.attributes.width = String(
-                    Math.round(currentWidth * scale * 100) / 100,
-                  );
-                }
-
-                if (
-                  node.attributes.height !== undefined &&
-                  currentWidth &&
-                  currentHeight
-                ) {
-                  const scale = contentHeight / currentHeight;
-                  node.attributes.height = String(
-                    Math.round(currentHeight * scale * 100) / 100,
-                  );
-                }
+                // Remove explicit width/height to let viewBox control sizing
+                // This allows the SVG to scale properly while maintaining aspect ratio
+                delete node.attributes.width;
+                delete node.attributes.height;
               }
             }
           },
@@ -527,9 +499,12 @@ function compress(svgInput, settings) {
   // Add transform plugins based on settings
   const transform = settings.transform || {};
 
-  // Add whitespace trimming plugin if enabled (run before resize)
+  // Collect transform plugins to run after SVGO plugins
+  const transformPlugins = [];
+
+  // Add whitespace trimming plugin if enabled
   if (transform.trimWhitespace) {
-    plugins.push(createTrimWhitespacePlugin());
+    transformPlugins.push(createTrimWhitespacePlugin());
   }
 
   // Add resize plugin if enabled and has meaningful values
@@ -546,20 +521,49 @@ function compress(svgInput, settings) {
       resizeOptions.maxHeight > 0 ||
       resizeOptions.scalePercent !== 100
     ) {
-      plugins.push(createResizePlugin(resizeOptions));
+      transformPlugins.push(createResizePlugin(resizeOptions));
     }
   }
 
   // multipass optimization
   const [dimensions, extractDimensionsPlugin] = createDimensionsExtractor();
-  const { data, error } = optimize(svgInput, {
+
+  // First pass: run SVGO plugins
+  let { data, error } = optimize(svgInput, {
     multipass: settings.multipass,
-    plugins: [...plugins, extractDimensionsPlugin],
+    plugins,
     js2svg: {
       indent: 2,
       pretty: settings.pretty,
     },
   });
+
+  if (error) throw new Error(error);
+
+  // Second pass: run transform plugins (trim whitespace, resize) after SVGO
+  if (transformPlugins.length > 0) {
+    const result = optimize(data, {
+      multipass: false,
+      plugins: [...transformPlugins, extractDimensionsPlugin],
+      js2svg: {
+        indent: 2,
+        pretty: settings.pretty,
+      },
+    });
+    data = result.data;
+    if (result.error) throw new Error(result.error);
+  } else {
+    // Just extract dimensions if no transform plugins
+    const result = optimize(data, {
+      multipass: false,
+      plugins: [extractDimensionsPlugin],
+      js2svg: {
+        indent: 2,
+        pretty: settings.pretty,
+      },
+    });
+    data = result.data;
+  }
 
   if (error) throw new Error(error);
 
