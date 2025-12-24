@@ -1,5 +1,5 @@
 import { createNanoEvents } from 'nanoevents';
-import { domReady, strToEl } from '../utils.js';
+import { strToEl } from '../utils.js';
 import Spinner from './spinner.js';
 
 export default class BulkOutput {
@@ -15,49 +15,50 @@ export default class BulkOutput {
     this._currentSettings = null;
 
     // Create container synchronously so it's available for appending
-    this.container = strToEl(`
-        <div class="bulk-output hidden">
-          <div class="bulk-drop-zone">
-            <input type="file" class="bulk-file-input" accept=".svg,image/svg+xml" multiple>
-            <div class="bulk-drop-content">
-              <svg class="bulk-drop-icon" viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg>
-              <p class="bulk-drop-text">Drop SVG files here</p>
-              <p class="bulk-drop-subtext">or</p>
-              <button class="bulk-select-btn">Select SVG Files</button>
-            </div>
-          </div>
-          <div class="bulk-output-header hidden">
-            <div class="bulk-header-left">
-              <h2 class="bulk-output-title">Bulk Processing</h2>
-              <span class="bulk-output-count"></span>
-            </div>
-            <div class="bulk-view-toggle">
-              <button class="bulk-view-btn grid-view active" title="Grid view">
-                <svg viewBox="0 0 24 24"><path d="M3 3h8v8H3V3zm0 10h8v8H3v-8zm10-10h8v8h-8V3zm0 10h8v8h-8v-8z"/></svg>
-              </button>
-              <button class="bulk-view-btn list-view" title="List view">
-                <svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg>
-              </button>
-            </div>
-          </div>
-          <div class="bulk-file-list grid-view"></div>
-          <div class="bulk-actions hidden">
-            <button class="bulk-process-btn">Process All</button>
-            <button class="bulk-clear-btn">Clear</button>
-          </div>
-          <div class="bulk-progress hidden">
-            <div class="bulk-progress-bar">
-              <div class="bulk-progress-fill"></div>
-            </div>
-            <span class="bulk-progress-text"></span>
-          </div>
-          <div class="bulk-summary hidden"></div>
-          <div class="bulk-download-actions hidden">
-            <button class="bulk-download-btn">Download ZIP</button>
-            <button class="bulk-clear-btn">Process More</button>
-          </div>
-        </div>
-      `);
+    // prettier-ignore
+    this.container = strToEl(
+      '<div class="bulk-output hidden">' +
+        '<div class="bulk-drop-zone">' +
+          '<input type="file" class="bulk-file-input" accept=".svg,image/svg+xml" multiple>' +
+          '<div class="bulk-drop-content">' +
+            '<svg class="bulk-drop-icon" viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg>' +
+            '<p class="bulk-drop-text">Drop SVG files here</p>' +
+            '<p class="bulk-drop-subtext">or</p>' +
+            '<button class="bulk-select-btn">Select SVG Files</button>' +
+          '</div>' +
+        '</div>' +
+        '<div class="bulk-output-header hidden">' +
+          '<div class="bulk-header-left">' +
+            '<h2 class="bulk-output-title">Bulk Processing</h2>' +
+            '<span class="bulk-output-count"></span>' +
+          '</div>' +
+          '<div class="bulk-view-toggle">' +
+            '<button class="bulk-view-btn grid-view active" title="Grid view">' +
+              '<svg viewBox="0 0 24 24"><path d="M3 3h8v8H3V3zm0 10h8v8H3v-8zm10-10h8v8h-8V3zm0 10h8v8h-8v-8z"/></svg>' +
+            '</button>' +
+            '<button class="bulk-view-btn list-view" title="List view">' +
+              '<svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg>' +
+            '</button>' +
+          '</div>' +
+        '</div>' +
+        '<div class="bulk-file-list grid-view"></div>' +
+        '<div class="bulk-actions hidden">' +
+          '<button class="bulk-process-btn">Process All</button>' +
+          '<button class="bulk-clear-btn">Clear</button>' +
+        '</div>' +
+        '<div class="bulk-progress hidden">' +
+          '<div class="bulk-progress-bar">' +
+            '<div class="bulk-progress-fill"></div>' +
+          '</div>' +
+          '<span class="bulk-progress-text"></span>' +
+        '</div>' +
+        '<div class="bulk-summary hidden"></div>' +
+        '<div class="bulk-download-actions hidden">' +
+          '<button class="bulk-download-btn">Download ZIP</button>' +
+          '<button class="bulk-clear-btn">Process More</button>' +
+        '</div>' +
+      '</div>'
+    );
 
     // Query elements synchronously since container is now created synchronously
     this._dropZone = this.container.querySelector('.bulk-drop-zone');
