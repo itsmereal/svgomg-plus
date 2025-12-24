@@ -14,8 +14,8 @@ export default class BulkOutput {
     this._svgo = null;
     this._currentSettings = null;
 
-    domReady.then(() => {
-      this.container = strToEl(`
+    // Create container synchronously so it's available for appending
+    this.container = strToEl(`
         <div class="bulk-output hidden">
           <div class="bulk-drop-zone">
             <input type="file" class="bulk-file-input" accept=".svg,image/svg+xml" multiple>
@@ -58,55 +58,54 @@ export default class BulkOutput {
           </div>
         </div>
       `);
-      this._dropZone = this.container.querySelector('.bulk-drop-zone');
-      this._fileInput = this.container.querySelector('.bulk-file-input');
-      this._selectBtn = this.container.querySelector('.bulk-select-btn');
-      this._header = this.container.querySelector('.bulk-output-header');
-      this._title = this.container.querySelector('.bulk-output-title');
-      this._count = this.container.querySelector('.bulk-output-count');
-      this._fileList = this.container.querySelector('.bulk-file-list');
-      this._actions = this.container.querySelector('.bulk-actions');
-      this._processBtn = this.container.querySelector('.bulk-process-btn');
-      this._clearBtns = this.container.querySelectorAll('.bulk-clear-btn');
-      this._progress = this.container.querySelector('.bulk-progress');
-      this._progressFill = this.container.querySelector('.bulk-progress-fill');
-      this._progressText = this.container.querySelector('.bulk-progress-text');
-      this._summary = this.container.querySelector('.bulk-summary');
-      this._downloadActions = this.container.querySelector(
-        '.bulk-download-actions',
-      );
-      this._downloadBtn = this.container.querySelector('.bulk-download-btn');
-      this._gridViewBtn = this.container.querySelector('.grid-view');
-      this._listViewBtn = this.container.querySelector('.list-view');
 
-      // Event listeners
-      this._selectBtn.addEventListener('click', () => this._fileInput.click());
-      this._fileInput.addEventListener('change', () => this._onFilesSelected());
-      this._processBtn.addEventListener('click', () => this._onProcessClick());
-      this._downloadBtn.addEventListener('click', () =>
-        this._onDownloadClick(),
-      );
-      for (const btn of this._clearBtns)
-        btn.addEventListener('click', () => this._onClearClick());
+    // Query elements synchronously since container is now created synchronously
+    this._dropZone = this.container.querySelector('.bulk-drop-zone');
+    this._fileInput = this.container.querySelector('.bulk-file-input');
+    this._selectBtn = this.container.querySelector('.bulk-select-btn');
+    this._header = this.container.querySelector('.bulk-output-header');
+    this._title = this.container.querySelector('.bulk-output-title');
+    this._count = this.container.querySelector('.bulk-output-count');
+    this._fileList = this.container.querySelector('.bulk-file-list');
+    this._actions = this.container.querySelector('.bulk-actions');
+    this._processBtn = this.container.querySelector('.bulk-process-btn');
+    this._clearBtns = this.container.querySelectorAll('.bulk-clear-btn');
+    this._progress = this.container.querySelector('.bulk-progress');
+    this._progressFill = this.container.querySelector('.bulk-progress-fill');
+    this._progressText = this.container.querySelector('.bulk-progress-text');
+    this._summary = this.container.querySelector('.bulk-summary');
+    this._downloadActions = this.container.querySelector(
+      '.bulk-download-actions',
+    );
+    this._downloadBtn = this.container.querySelector('.bulk-download-btn');
+    this._gridViewBtn = this.container.querySelector('.grid-view');
+    this._listViewBtn = this.container.querySelector('.list-view');
 
-      // View toggle
-      this._gridViewBtn.addEventListener('click', () =>
-        this._setViewMode('grid'),
-      );
-      this._listViewBtn.addEventListener('click', () =>
-        this._setViewMode('list'),
-      );
+    // Event listeners
+    this._selectBtn.addEventListener('click', () => this._fileInput.click());
+    this._fileInput.addEventListener('change', () => this._onFilesSelected());
+    this._processBtn.addEventListener('click', () => this._onProcessClick());
+    this._downloadBtn.addEventListener('click', () => this._onDownloadClick());
+    for (const btn of this._clearBtns)
+      btn.addEventListener('click', () => this._onClearClick());
 
-      // Drag and drop
-      this._dropZone.addEventListener('dragover', (e) => this._onDragOver(e));
-      this._dropZone.addEventListener('dragleave', (e) => this._onDragLeave(e));
-      this._dropZone.addEventListener('drop', (e) => this._onDrop(e));
+    // View toggle
+    this._gridViewBtn.addEventListener('click', () =>
+      this._setViewMode('grid'),
+    );
+    this._listViewBtn.addEventListener('click', () =>
+      this._setViewMode('list'),
+    );
 
-      // Also allow dropping on the whole container when files are already selected
-      this.container.addEventListener('dragover', (e) => this._onDragOver(e));
-      this.container.addEventListener('dragleave', (e) => this._onDragLeave(e));
-      this.container.addEventListener('drop', (e) => this._onDrop(e));
-    });
+    // Drag and drop
+    this._dropZone.addEventListener('dragover', (e) => this._onDragOver(e));
+    this._dropZone.addEventListener('dragleave', (e) => this._onDragLeave(e));
+    this._dropZone.addEventListener('drop', (e) => this._onDrop(e));
+
+    // Also allow dropping on the whole container when files are already selected
+    this.container.addEventListener('dragover', (e) => this._onDragOver(e));
+    this.container.addEventListener('dragleave', (e) => this._onDragLeave(e));
+    this.container.addEventListener('drop', (e) => this._onDrop(e));
   }
 
   setSvgo(svgo) {
