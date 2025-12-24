@@ -12,6 +12,9 @@ RUN npm ci
 # Copy source files
 COPY . .
 
+# Cache bust - change this value to force rebuild
+ARG CACHEBUST=1
+
 # Build the application
 RUN npm run build
 
