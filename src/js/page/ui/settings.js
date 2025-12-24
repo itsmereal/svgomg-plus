@@ -16,6 +16,16 @@ export default class Settings {
       this._globalInputs = [
         ...this.container.querySelectorAll('.global input'),
       ];
+      this._transformInputs = [
+        ...this.container.querySelectorAll('.transform input'),
+      ];
+      this._resizeOptions = this.container.querySelector('.resize-options');
+      this._enableResizeCheckbox = this.container.querySelector(
+        'input[name="enableResize"]',
+      );
+
+      // Initial state for resize options visibility
+      this._updateResizeOptionsVisibility();
 
       const scroller = this.container.querySelector('.settings-scroller');
       const resetBtn = this.container.querySelector('.setting-reset');
@@ -35,6 +45,11 @@ export default class Settings {
       this.container.addEventListener('input', (event) =>
         this._onChange(event),
       );
+      this.container.addEventListener('change', (event) => {
+        if (event.target.name === 'enableResize') {
+          this._updateResizeOptionsVisibility();
+        }
+      });
       resetBtn.addEventListener('click', () => this._onReset());
 
       // TODO: revisit this
@@ -62,6 +77,14 @@ export default class Settings {
     }
   }
 
+  _updateResizeOptionsVisibility() {
+    if (this._resizeOptions && this._enableResizeCheckbox) {
+      this._resizeOptions.style.display = this._enableResizeCheckbox.checked
+        ? 'block'
+        : 'none';
+    }
+  }
+
   _onReset() {
     this._resetRipple.animate();
     const oldSettings = this.getSettings();
@@ -75,10 +98,19 @@ export default class Settings {
       }
     }
 
+    for (const inputEl of this._transformInputs) {
+      if (inputEl.type === 'checkbox') {
+        inputEl.checked = inputEl.hasAttribute('checked');
+      } else if (inputEl.type === 'range') {
+        this._sliderMap.get(inputEl).value = inputEl.getAttribute('value');
+      }
+    }
+
     for (const inputEl of this._pluginInputs) {
       inputEl.checked = inputEl.hasAttribute('checked');
     }
 
+    this._updateResizeOptionsVisibility();
     this.emitter.emit('reset', oldSettings);
     this.emitter.emit('change');
   }
@@ -94,6 +126,19 @@ export default class Settings {
       }
     }
 
+    const transformSettings = settings.transform || {};
+    for (const inputEl of this._transformInputs) {
+      if (!(inputEl.name in transformSettings)) continue;
+
+      if (inputEl.type === 'checkbox') {
+        inputEl.checked = transformSettings[inputEl.name];
+      } else if (inputEl.type === 'range') {
+        this._sliderMap.get(inputEl).value = transformSettings[inputEl.name];
+      }
+    }
+
+    this._updateResizeOptionsVisibility();
+
     for (const inputEl of this._pluginInputs) {
       if (!(inputEl.name in settings.plugins)) continue;
       inputEl.checked = settings.plugins[inputEl.name];
@@ -105,6 +150,7 @@ export default class Settings {
     const fingerprint = [];
     const output = {
       plugins: {},
+      transform: {},
     };
 
     for (const inputEl of this._globalInputs) {
@@ -118,6 +164,16 @@ export default class Settings {
 
       output[inputEl.name] =
         inputEl.type === 'checkbox' ? inputEl.checked : inputEl.value;
+    }
+
+    for (const inputEl of this._transformInputs) {
+      if (inputEl.type === 'checkbox') {
+        fingerprint.push(Number(inputEl.checked));
+        output.transform[inputEl.name] = inputEl.checked;
+      } else {
+        fingerprint.push(`|${inputEl.value}|`);
+        output.transform[inputEl.name] = Number(inputEl.value);
+      }
     }
 
     for (const inputEl of this._pluginInputs) {

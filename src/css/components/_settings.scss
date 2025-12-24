@@ -85,3 +85,19 @@
     padding-top: 100%;
   }
 }
+
+.resize-options {
+  padding-left: 16px;
+  border-left: 3px solid #e0e0e0;
+  margin: 0 16px 10px;
+  display: none;
+
+  .setting-item-range {
+    padding: 8px 0 16px;
+
+    .label-text {
+      font-size: 0.85rem;
+      color: #666;
+    }
+  }
+}

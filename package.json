@@ -1,17 +1,30 @@
 {
-  "name": "svgomg",
+  "name": "svgomg-plus",
   "private": true,
-  "version": "1.17.0",
+  "version": "2.0.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jakearchibald/svgomg.git"
+    "url": "git+https://github.com/itsmereal/svgomg-plus.git"
   },
-  "keywords": [],
-  "author": "Jake Archibald",
+  "keywords": [
+    "svg",
+    "svgo",
+    "optimizer",
+    "minify",
+    "compress",
+    "resize"
+  ],
+  "author": "itsmereal",
+  "contributors": [
+    {
+      "name": "Jake Archibald",
+      "url": "https://github.com/jakearchibald"
+    }
+  ],
   "bugs": {
-    "url": "https://github.com/jakearchibald/svgomg/issues"
+    "url": "https://github.com/itsmereal/svgomg-plus/issues"
   },
-  "homepage": "https://jakearchibald.github.io/svgomg/",
+  "homepage": "https://itsmereal.github.io/svgomg-plus/",
   "license": "MIT",
   "devDependencies": {
     "@rollup/plugin-commonjs": "^23.0.2",

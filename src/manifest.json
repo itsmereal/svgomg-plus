@@ -1,5 +1,7 @@
 {
-  "name": "SVGOMG",
+  "name": "SVGOMG Plus",
+  "short_name": "SVGOMG+",
+  "description": "Advanced SVG optimizer with resize, max dimensions, scaling, and whitespace removal",
   "scope": "./",
   "icons": [
     {

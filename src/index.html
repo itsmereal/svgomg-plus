@@ -10,7 +10,7 @@
     <link rel="apple-touch-icon" href="{{ iconPath }}">
     <link rel="icon" href="{{ iconPath }}">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="application-name" content="SVGOMG">
+    <meta name="application-name" content="SVGOMG Plus">
     <meta name="twitter:card" content="summary">
     <meta name="description" content="{{ description }}">
     <meta property="og:description" content="{{ description }}">
@@ -47,7 +47,7 @@
           <div class="app-title">
             {% include "partials/icons/logo.svg" %}
             <div class="title-text">
-              <h1>SVGOMG</h1>
+              <h1>SVGOMG Plus</h1>
               <p>Powered by <a href="https://github.com/svg/svgo">SVGO v{{ SVGO_VERSION }}</a></p>
             </div>
           </div>
@@ -75,9 +75,15 @@
               </button>
             </li>
             <li>
-              <a href="https://github.com/jakearchibald/svgomg" class="menu-item">
+              <a href="https://github.com/itsmereal/svgomg-plus" class="menu-item">
                 {% include "partials/icons/contribute.svg" %}
                 <span class="menu-item-text">Contribute</span>
+              </a>
+            </li>
+            <li>
+              <a href="https://github.com/jakearchibald/svgomg" class="menu-item">
+                {% include "partials/icons/heart.svg" %}
+                <span class="menu-item-text">Credits</span>
               </a>
             </li>
           </ul>
@@ -143,6 +149,33 @@
                 <span class="label-text">Transform precision</span>
                 <input type="range" min="0" max="8" step="1" value="5" name="transformPrecision">
               </label>
+            </section>
+            <section class="transform">
+              <h1 class="settings-sub-heading">Transform</h1>
+              <label class="setting-item-toggle">
+                <input type="checkbox" name="trimWhitespace">
+                {% include "partials/material-switch.html" %}
+                Remove whitespace around content
+              </label>
+              <label class="setting-item-toggle">
+                <input type="checkbox" name="enableResize">
+                {% include "partials/material-switch.html" %}
+                Resize SVG
+              </label>
+              <div class="resize-options">
+                <label class="setting-item-range">
+                  <span class="label-text">Max width (px, 0 = no limit)</span>
+                  <input type="range" min="0" max="2000" step="10" value="0" name="maxWidth">
+                </label>
+                <label class="setting-item-range">
+                  <span class="label-text">Max height (px, 0 = no limit)</span>
+                  <input type="range" min="0" max="2000" step="10" value="0" name="maxHeight">
+                </label>
+                <label class="setting-item-range">
+                  <span class="label-text">Scale (%)</span>
+                  <input type="range" min="1" max="200" step="1" value="100" name="scalePercent">
+                </label>
+              </div>
             </section>
             <section class="plugins">
               <h1 class="settings-sub-heading">Features</h1>
