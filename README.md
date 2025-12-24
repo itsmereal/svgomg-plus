@@ -2,7 +2,7 @@
 
 An enhanced fork of [SVGOMG](https://github.com/jakearchibald/svgomg) with additional transform and resize features.
 
-**[Try it live](https://itsmereal.github.io/svgomg-plus/)**
+**[Try it live](https://svgomg.wolfdevs.com/)**
 
 ## What's New in SVGOMG Plus
 
