@@ -1,5 +1,15 @@
 [
   {
+    "version": "2.1.0",
+    "changes": [
+      "Added bulk SVG processing - optimize multiple files at once",
+      "Grid and list view for bulk file previews",
+      "Live preview updates when settings change",
+      "Download all optimized files as a ZIP archive",
+      "Added resize, scale, and whitespace trimming features"
+    ]
+  },
+  {
     "version": "1.17.0",
     "changes": [
       "Updated to SVGO v4.0.0 (thanks PowerKiKi)",
