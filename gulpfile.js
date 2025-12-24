@@ -111,7 +111,7 @@ async function html() {
         headCSS,
         SVGOMG_VERSION: changelog[0].version,
         SVGO_VERSION,
-        liveBaseUrl: 'https://itsmereal.github.io/svgomg-plus/',
+        liveBaseUrl: 'https://svgomg.wolfdevs.com/',
         title: `SVGOMG Plus - Enhanced SVG Optimizer with Resize & Transform`,
         description:
           'Advanced SVG optimizer with resize, max dimensions, scaling, and whitespace removal.',
