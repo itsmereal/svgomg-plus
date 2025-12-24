@@ -16,6 +16,10 @@ import ResultsContainer from './ui/results-container.js';
 import ViewToggler from './ui/view-toggler.js';
 import ResultsCache from './results-cache.js';
 import MainUi from './ui/main-ui.js';
+import BulkMenu from './ui/bulk-menu.js';
+import BulkOutput from './ui/bulk-output.js';
+import BulkProcessor from './bulk-processor.js';
+import { createAndDownloadZip } from './zip-exporter.js';
 
 const svgo = new Svgo();
 
@@ -30,6 +34,10 @@ export default class MainController {
     this._settingsUi = new Settings();
     this._mainMenuUi = new MainMenu();
     this._toastsUi = new Toasts();
+    this._bulkMenuUi = new BulkMenu();
+    this._bulkOutputUi = new BulkOutput();
+    this._bulkOutputUi.setSvgo(svgo);
+    this._bulkProcessor = new BulkProcessor(svgo);
 
     const bgFillUi = new BgFillButton();
     const dropUi = new FileDrop();
@@ -50,6 +58,25 @@ export default class MainController {
     dropUi.emitter.on('svgDataLoad', (event) => this._onInputChange(event));
     this._mainMenuUi.emitter.on('error', ({ error }) =>
       this._handleError(error),
+    );
+    this._mainMenuUi.emitter.on('modeChange', (event) =>
+      this._onModeChange(event),
+    );
+    // Bulk output events (main bulk UI in canvas area)
+    this._bulkOutputUi.emitter.on('processBulk', (event) =>
+      this._onBulkProcess(event),
+    );
+    this._bulkOutputUi.emitter.on('downloadZip', (event) =>
+      this._onDownloadZip(event),
+    );
+    this._bulkOutputUi.emitter.on('error', ({ error }) =>
+      this._handleError(error),
+    );
+    this._bulkOutputUi.emitter.on('filesSelected', (event) =>
+      this._onBulkFilesSelected(event),
+    );
+    this._bulkProcessor.emitter.on('progress', (event) =>
+      this._onBulkProgress(event),
     );
     viewTogglerUi.emitter.on('change', (event) =>
       this._outputUi.set(event.value),
@@ -106,7 +133,10 @@ export default class MainController {
         this._copyButtonUi.container,
       );
       actionContainer.append(this._downloadButtonUi.container);
-      outputElement.append(this._outputUi.container);
+      outputElement.append(
+        this._outputUi.container,
+        this._bulkOutputUi.container,
+      );
       container.append(this._toastsUi.container, dropUi.container);
       menuExtraElement.append(changelogUi.container);
 
@@ -206,7 +236,17 @@ export default class MainController {
   _onSettingsChange() {
     const settings = this._settingsUi.getSettings();
     this._saveSettings(settings);
-    this._compressSvg(settings);
+
+    // In bulk mode, update previews instead of compressing single file
+    if (this._bulkMode) {
+      this._bulkOutputUi.updatePreviews(settings);
+      return;
+    }
+
+    // Only compress if we have an input file
+    if (this._inputItem) {
+      this._compressSvg(settings);
+    }
   }
 
   async _onSettingsReset(oldSettings) {
@@ -317,5 +357,118 @@ export default class MainController {
       comparisonSize: compareToFile && (await compareToFile.size({ compress })),
       size: await svgFile.size({ compress }),
     });
+  }
+
+  _onModeChange({ mode }) {
+    this._userHasInteracted = true;
+    this._bulkMode = mode === 'bulk';
+
+    // Get elements to show/hide based on mode
+    const actionButtonContainer = document.querySelector(
+      '.action-button-container',
+    );
+    const outputSwitcher = document.querySelector('.output-switcher');
+    const viewToggler = document.querySelector('.view-toggler');
+
+    if (this._bulkMode) {
+      // Show bulk UI elements
+      this._bulkOutputUi.show();
+      this._outputUi.container.classList.add('hidden');
+
+      // Hide single-file UI elements (floating buttons, results, output switcher, view toggler)
+      if (actionButtonContainer) {
+        actionButtonContainer.classList.add('bulk-hidden');
+      }
+
+      if (outputSwitcher) {
+        outputSwitcher.classList.add('bulk-hidden');
+      }
+
+      if (viewToggler) {
+        viewToggler.classList.add('bulk-hidden');
+      }
+
+      // Activate main UI elements (settings, toolbar, etc.)
+      this._mainUi.activate();
+
+      // Ensure settings panel is visible (force show even if activate already ran)
+      const toolbar = document.querySelector('.toolbar');
+      const settings = this._settingsUi.container;
+      toolbar.classList.add('transition', 'active');
+      settings.classList.add('transition', 'active');
+
+      // Close the menu
+      this._mainMenuUi.allowHide = true;
+      this._mainMenuUi.hide();
+    } else {
+      this._bulkMenuUi.hide();
+      this._bulkMenuUi.reset();
+      this._bulkOutputUi.hide();
+      this._bulkOutputUi.reset();
+      this._outputUi.container.classList.remove('hidden');
+
+      // Show single-file UI elements
+      if (actionButtonContainer) {
+        actionButtonContainer.classList.remove('bulk-hidden');
+      }
+
+      if (outputSwitcher) {
+        outputSwitcher.classList.remove('bulk-hidden');
+      }
+
+      if (viewToggler) {
+        viewToggler.classList.remove('bulk-hidden');
+      }
+    }
+  }
+
+  _onBulkFilesSelected({ files }) {
+    this._bulkOutputUi.setFiles(files);
+  }
+
+  async _onBulkProcess({ files }) {
+    this._userHasInteracted = true;
+    const settings = this._settingsUi.getSettings();
+
+    try {
+      const { results, errors } = await this._bulkProcessor.processFiles(
+        files,
+        settings,
+      );
+
+      this._bulkOutputUi.setResults(results, errors);
+
+      if (errors.length > 0) {
+        this._toastsUi.show(
+          `${errors.length} file${
+            errors.length > 1 ? 's' : ''
+          } failed to process`,
+          { duration: 3000 },
+        );
+      }
+
+      if (results.length > 0) {
+        this._toastsUi.show(
+          `${results.length} file${results.length > 1 ? 's' : ''} optimized`,
+          { duration: 2000 },
+        );
+      }
+    } catch (error) {
+      this._handleError(error);
+      this._bulkOutputUi.reset();
+    }
+  }
+
+  _onBulkProgress({ percent, current, total }) {
+    this._bulkOutputUi.updateProgress(percent, current, total);
+  }
+
+  async _onDownloadZip({ results }) {
+    try {
+      await createAndDownloadZip(results);
+      this._toastsUi.show('ZIP downloaded', { duration: 2000 });
+    } catch (error) {
+      this._handleError(new Error(`Failed to create ZIP: ${error.message}`));
+    }
   }
 }

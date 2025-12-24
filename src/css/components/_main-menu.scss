@@ -195,3 +195,165 @@
   grid-template-rows: max-content max-content;
   gap: 0.2em;
 }
+
+// Mode toggle buttons
+.mode-toggle {
+  display: flex;
+  margin: 12px 16px;
+  border-radius: 6px;
+  overflow: hidden;
+  background-color: #e0e0e0;
+}
+
+.mode-btn {
+  flex: 1;
+  padding: 10px 16px;
+  border: none;
+  background-color: transparent;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+  color: #666;
+
+  &:hover {
+    background-color: rgba(#000, 0.05);
+  }
+
+  &.active {
+    background-color: #3f51b5;
+    color: #fff;
+  }
+}
+
+// Bulk menu
+.bulk-menu {
+  padding: 0;
+
+  &.hidden {
+    display: none;
+  }
+
+  &.transition {
+    transition: opacity 0.2s ease-in-out;
+  }
+
+  .bulk-file-input {
+    display: none;
+  }
+
+  .bulk-file-info {
+    padding: 12px 16px;
+    color: #666;
+    font-size: 0.9rem;
+    background-color: #f5f5f5;
+    border-left: 3px solid #3f51b5;
+    margin: 0 16px;
+
+    &.hidden {
+      display: none;
+    }
+  }
+
+  .bulk-error-info {
+    padding: 8px 16px;
+    color: #d32f2f;
+    font-size: 0.85rem;
+    margin: 0 16px;
+
+    &.hidden {
+      display: none;
+    }
+  }
+
+  .bulk-progress {
+    padding: 12px 16px;
+    margin: 0 16px;
+
+    &.hidden {
+      display: none;
+    }
+  }
+
+  .bulk-progress-bar {
+    height: 4px;
+    background-color: #e0e0e0;
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+
+  .bulk-progress-fill {
+    height: 100%;
+    background-color: #3f51b5;
+    width: 0;
+    transition: width 0.3s ease-out;
+  }
+
+  .bulk-progress-text {
+    font-size: 0.85rem;
+    color: #666;
+  }
+
+  .bulk-process-btn,
+  .bulk-download-btn {
+    &.hidden {
+      display: none;
+    }
+  }
+
+  .bulk-process-btn {
+    background-color: #3f51b5;
+    color: #fff;
+    margin: 8px 16px;
+    border-radius: 4px;
+    justify-content: center;
+    width: calc(100% - 32px);
+    box-sizing: border-box;
+
+    &:hover,
+    &:focus {
+      background-color: #303f9f;
+    }
+
+    .icon {
+      opacity: 1;
+      margin-right: 8px;
+    }
+  }
+
+  .bulk-download-btn {
+    background-color: #4caf50;
+    color: #fff;
+    margin: 8px 16px;
+    border-radius: 4px;
+    justify-content: center;
+    width: calc(100% - 32px);
+    box-sizing: border-box;
+
+    &:hover,
+    &:focus {
+      background-color: #43a047;
+    }
+
+    .icon {
+      opacity: 1;
+      margin-right: 8px;
+    }
+  }
+
+  .bulk-clear-btn,
+  .bulk-select-btn {
+    &.hidden {
+      display: none;
+    }
+  }
+}
+
+// Single mode content visibility
+.single-mode-content {
+  &.hidden {
+    display: none;
+  }
+}

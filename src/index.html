@@ -51,7 +51,11 @@
               <p>Powered by <a href="https://github.com/svg/svgo">SVGO v{{ SVGO_VERSION }}</a></p>
             </div>
           </div>
-          <ul>
+          <div class="mode-toggle">
+            <button class="mode-btn single-mode-btn active" type="button">Single</button>
+            <button class="mode-btn bulk-mode-btn" type="button">Bulk</button>
+          </div>
+          <ul class="single-mode-content">
             <li>
               <button class="load-file unbutton menu-item" type="button">
                 {% include "partials/icons/open.svg" %}
@@ -87,6 +91,33 @@
               </a>
             </li>
           </ul>
+          <div class="bulk-menu hidden">
+            <input type="file" class="bulk-file-input" accept=".svg" multiple>
+            <button class="bulk-select-btn unbutton menu-item" type="button">
+              {% include "partials/icons/open.svg" %}
+              <span class="menu-item-text">Select SVG Files</span>
+            </button>
+            <div class="bulk-file-info hidden"></div>
+            <div class="bulk-progress hidden">
+              <div class="bulk-progress-bar">
+                <div class="bulk-progress-fill"></div>
+              </div>
+              <span class="bulk-progress-text"></span>
+            </div>
+            <div class="bulk-error-info hidden"></div>
+            <button class="bulk-clear-btn unbutton menu-item hidden" type="button">
+              {% include "partials/icons/close.svg" %}
+              <span class="menu-item-text">Clear Selection</span>
+            </button>
+            <button class="bulk-process-btn unbutton menu-item hidden" type="button">
+              {% include "partials/icons/play.svg" %}
+              <span class="menu-item-text">Process All</span>
+            </button>
+            <button class="bulk-download-btn unbutton menu-item hidden" type="button">
+              {% include "partials/icons/download.svg" %}
+              <span class="menu-item-text">Download ZIP</span>
+            </button>
+          </div>
           <div class="menu-extra"></div>
         </nav>
       </div>

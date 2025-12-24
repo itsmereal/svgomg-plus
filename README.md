@@ -1,19 +1,29 @@
 # SVGOMG Plus
 
-An enhanced fork of [SVGOMG](https://github.com/jakearchibald/svgomg) with additional transform and resize features.
+An enhanced fork of [SVGOMG](https://github.com/jakearchibald/svgomg) with additional transform, resize, and bulk processing features.
 
 **[Try it live](https://svgomg.wolfdevs.com/)**
 
 ## What's New in SVGOMG Plus
 
-This fork adds a **Transform** section with powerful new features:
+### Bulk Processing
+Process multiple SVG files at once with the same optimization settings:
+- **Batch optimization** - Select or drag & drop multiple SVG files
+- **Live previews** - See thumbnails of all your SVGs in grid or list view
+- **Real-time updates** - Previews update as you adjust settings
+- **ZIP download** - Download all optimized files as a single ZIP archive
+- **Progress tracking** - Overall progress bar during processing
+- **Size summary** - See total bytes saved across all files
 
-### Resize & Scale
+### Transform Features
+This fork adds a **Transform** section with powerful features:
+
+#### Resize & Scale
 - **Max Width** - Set a maximum width constraint (maintains aspect ratio)
 - **Max Height** - Set a maximum height constraint (maintains aspect ratio)
 - **Scale %** - Scale the SVG by a percentage (1-200%)
 
-### Whitespace Removal
+#### Whitespace Removal
 - **Remove whitespace around content** - Automatically trims empty space around SVG content by recalculating the viewBox to fit the bounding box of all visible elements
 
 ## Features

@@ -13,6 +13,8 @@ export default class MainMenu {
     this.allowHide = false;
     this._spinner = new Spinner();
 
+    this._currentMode = 'single';
+
     domReady.then(() => {
       this.container = document.querySelector('.main-menu');
       this._loadFileInput = this.container.querySelector('.load-file-input');
@@ -22,6 +24,11 @@ export default class MainMenu {
       this._pasteLabel = this.container.querySelector('.menu-input');
       this._overlay = this.container.querySelector('.overlay');
       this._menu = this.container.querySelector('.menu');
+      this._singleModeContent = this.container.querySelector(
+        '.single-mode-content',
+      );
+      this._singleModeBtn = this.container.querySelector('.single-mode-btn');
+      this._bulkModeBtn = this.container.querySelector('.bulk-mode-btn');
       const menuBtn = document.querySelector('.menu-btn');
 
       menuBtn.addEventListener('click', (event) =>
@@ -41,6 +48,12 @@ export default class MainMenu {
       );
       this._pasteInput.addEventListener('input', () =>
         this._onTextInputChange(),
+      );
+      this._singleModeBtn.addEventListener('click', () =>
+        this._onModeClick('single'),
+      );
+      this._bulkModeBtn.addEventListener('click', () =>
+        this._onModeClick('bulk'),
       );
     });
   }
@@ -139,5 +152,24 @@ export default class MainMenu {
 
       this.emitter.emit('error', { error });
     }
+  }
+
+  _onModeClick(mode) {
+    if (this._currentMode === mode) return;
+
+    this._currentMode = mode;
+
+    // Update button states
+    this._singleModeBtn.classList.toggle('active', mode === 'single');
+    this._bulkModeBtn.classList.toggle('active', mode === 'bulk');
+
+    // Show/hide content
+    if (mode === 'single') {
+      this._singleModeContent.classList.remove('hidden');
+    } else {
+      this._singleModeContent.classList.add('hidden');
+    }
+
+    this.emitter.emit('modeChange', { mode });
   }
 }
