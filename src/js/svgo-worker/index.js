@@ -475,6 +475,9 @@ function compress(svgInput, settings) {
   const transformPrecision = Number(settings.transformPrecision);
   const plugins = [];
 
+  // Generate a random prefix for prefixIds plugin (8 chars, alphanumeric)
+  const randomPrefix = Math.random().toString(36).substring(2, 10);
+
   for (const [name, enabled] of Object.entries(settings.plugins)) {
     if (!enabled) continue;
 
@@ -492,6 +495,11 @@ function compress(svgInput, settings) {
         : floatPrecision;
 
     plugin.params.transformPrecision = transformPrecision;
+
+    // Use random prefix for prefixIds to ensure uniqueness
+    if (name === 'prefixIds') {
+      plugin.params.prefix = randomPrefix;
+    }
 
     plugins.push(plugin);
   }

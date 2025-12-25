@@ -105,6 +105,50 @@
   gap: 12px;
 }
 
+.bulk-header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+// Selection controls
+.bulk-selection-controls {
+  display: flex;
+  gap: 4px;
+}
+
+.bulk-select-all-btn,
+.bulk-select-none-btn,
+.bulk-delete-selected-btn {
+  width: 36px;
+  height: 36px;
+  padding: 6px;
+  border: none;
+  background-color: transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #666;
+  transition: all 0.2s ease;
+
+  svg {
+    width: 100%;
+    height: 100%;
+    fill: currentcolor;
+  }
+
+  &:hover {
+    background-color: #e0e0e0;
+    color: #333;
+  }
+}
+
+.bulk-delete-selected-btn {
+  &:hover {
+    background-color: #ffebee;
+    color: #d32f2f;
+  }
+}
+
 .bulk-output-title {
   margin: 0;
   font-size: 1.2rem;
@@ -160,6 +204,72 @@
   padding-bottom: 16px;
 }
 
+// Checkbox styling (shared)
+.bulk-file-checkbox {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 2px solid #ccc;
+  background-color: #fff;
+  border-radius: 6px;
+  cursor: pointer;
+  color: transparent;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  svg {
+    width: 18px;
+    height: 18px;
+    fill: currentcolor;
+  }
+
+  &:hover {
+    border-color: #1a73e8;
+  }
+
+  .selected & {
+    background-color: #1a73e8;
+    border-color: #1a73e8;
+    color: #fff;
+  }
+}
+
+// Delete button styling (shared)
+.bulk-file-delete {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  background-color: transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #999;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  opacity: 0;
+
+  svg {
+    width: 18px;
+    height: 18px;
+    fill: currentcolor;
+  }
+
+  &:hover {
+    background-color: #ffebee;
+    color: #d32f2f;
+  }
+}
+
+.bulk-file-item:hover .bulk-file-delete {
+  opacity: 1;
+}
+
 // Grid view
 .bulk-file-list.grid-view {
   display: grid;
@@ -174,11 +284,48 @@
     border-radius: 8px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     overflow: hidden;
-    transition: box-shadow 0.2s ease;
+    transition: all 0.2s ease;
     height: fit-content;
+    position: relative;
+    border: 2px solid transparent;
 
     &:hover {
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    &.selected {
+      border-color: #1a73e8;
+    }
+  }
+
+  .bulk-file-checkbox {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    z-index: 1;
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+
+    svg {
+      width: 12px;
+      height: 12px;
+    }
+  }
+
+  .bulk-file-delete {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    z-index: 1;
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    background-color: rgba(255, 255, 255, 0.9);
+
+    svg {
+      width: 12px;
+      height: 12px;
     }
   }
 
@@ -231,10 +378,10 @@
 
   .bulk-file-status {
     position: absolute;
-    top: 8px;
-    right: 8px;
-    width: 24px;
-    height: 24px;
+    top: 6px;
+    right: 6px;
+    width: 20px;
+    height: 20px;
     background-color: rgba(255, 255, 255, 0.9);
     border-radius: 50%;
     display: flex;
@@ -242,8 +389,8 @@
     justify-content: center;
 
     svg {
-      width: 16px;
-      height: 16px;
+      width: 12px;
+      height: 12px;
       fill: currentcolor;
     }
 
@@ -259,10 +406,6 @@
       color: #d32f2f;
     }
   }
-
-  .bulk-file-item {
-    position: relative;
-  }
 }
 
 // List view
@@ -273,13 +416,20 @@
 
   .bulk-file-item {
     display: grid;
-    grid-template-columns: 48px 1fr auto 24px;
+    grid-template-columns: auto 48px 1fr auto auto 24px;
     align-items: center;
     gap: 12px;
     padding: 12px 16px;
     background-color: #fff;
     border-radius: 6px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: 2px solid transparent;
+    transition: all 0.2s ease;
+
+    &.selected {
+      border-color: #1a73e8;
+      background-color: #f0f7ff;
+    }
   }
 
   .bulk-file-preview {

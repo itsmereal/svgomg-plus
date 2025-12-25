@@ -52,6 +52,9 @@ export default class FileDrop {
     this._activeEnters = 0;
     transitionFromClass(this.container);
 
+    // If bulk mode already handled this drop, don't process it again
+    if (event._bulkHandled) return;
+
     const file = event.dataTransfer.files[0];
     if (!file) return;
 

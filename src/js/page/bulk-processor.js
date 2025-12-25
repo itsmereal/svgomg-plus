@@ -40,7 +40,7 @@ export default class BulkProcessor {
         }
 
         // eslint-disable-next-line no-await-in-loop
-        const optimized = await this._svgo.process(text, settings);
+        const optimized = await this._svgo.process(text, settings, file.name);
 
         results.push({
           filename: file.name,

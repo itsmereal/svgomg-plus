@@ -1,5 +1,15 @@
 [
   {
+    "version": "2.2.0",
+    "changes": [
+      "Added Prefix IDs option to prevent ID conflicts when embedding multiple SVGs",
+      "Added file selection checkboxes in bulk mode",
+      "Added delete functionality for individual and selected files",
+      "Fixed drag & drop overlay behavior in bulk mode",
+      "Improved service worker caching for faster updates"
+    ]
+  },
+  {
     "version": "2.1.0",
     "changes": [
       "Added bulk SVG processing - optimize multiple files at once",

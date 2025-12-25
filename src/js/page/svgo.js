@@ -16,7 +16,7 @@ export default class Svgo extends WorkerMessenger {
     return new SvgFile(svgText, width, height);
   }
 
-  process(svgText, settings) {
+  process(svgText, settings, filename = null) {
     this.abort();
 
     this._currentJob = this._currentJob
@@ -26,6 +26,7 @@ export default class Svgo extends WorkerMessenger {
           action: 'process',
           settings,
           data: svgText,
+          filename,
         });
 
         // return final result

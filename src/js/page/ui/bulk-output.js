@@ -6,6 +6,7 @@ export default class BulkOutput {
   constructor() {
     this.emitter = createNanoEvents();
     this._files = [];
+    this._selectedFiles = new Set(); // Track selected file names
     this._fileData = new Map(); // Store file contents for previews
     this._results = null;
     this._spinner = new Spinner();
@@ -32,19 +33,32 @@ export default class BulkOutput {
             '<h2 class="bulk-output-title">Bulk Processing</h2>' +
             '<span class="bulk-output-count"></span>' +
           '</div>' +
-          '<div class="bulk-view-toggle">' +
-            '<button class="bulk-view-btn grid-view active" title="Grid view">' +
-              '<svg viewBox="0 0 24 24"><path d="M3 3h8v8H3V3zm0 10h8v8H3v-8zm10-10h8v8h-8V3zm0 10h8v8h-8v-8z"/></svg>' +
-            '</button>' +
-            '<button class="bulk-view-btn list-view" title="List view">' +
-              '<svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg>' +
-            '</button>' +
+          '<div class="bulk-header-right">' +
+            '<div class="bulk-selection-controls">' +
+              '<button class="bulk-select-all-btn" title="Select all">' +
+                '<svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>' +
+              '</button>' +
+              '<button class="bulk-select-none-btn" title="Select none">' +
+                '<svg viewBox="0 0 24 24"><path d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg>' +
+              '</button>' +
+              '<button class="bulk-delete-selected-btn" title="Delete selected">' +
+                '<svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>' +
+              '</button>' +
+            '</div>' +
+            '<div class="bulk-view-toggle">' +
+              '<button class="bulk-view-btn grid-view active" title="Grid view">' +
+                '<svg viewBox="0 0 24 24"><path d="M3 3h8v8H3V3zm0 10h8v8H3v-8zm10-10h8v8h-8V3zm0 10h8v8h-8v-8z"/></svg>' +
+              '</button>' +
+              '<button class="bulk-view-btn list-view" title="List view">' +
+                '<svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg>' +
+              '</button>' +
+            '</div>' +
           '</div>' +
         '</div>' +
         '<div class="bulk-file-list grid-view"></div>' +
         '<div class="bulk-actions hidden">' +
-          '<button class="bulk-process-btn">Process All</button>' +
-          '<button class="bulk-clear-btn">Clear</button>' +
+          '<button class="bulk-process-btn">Process Selected</button>' +
+          '<button class="bulk-clear-btn">Clear All</button>' +
         '</div>' +
         '<div class="bulk-progress hidden">' +
           '<div class="bulk-progress-bar">' +
@@ -81,6 +95,11 @@ export default class BulkOutput {
     this._downloadBtn = this.container.querySelector('.bulk-download-btn');
     this._gridViewBtn = this.container.querySelector('.grid-view');
     this._listViewBtn = this.container.querySelector('.list-view');
+    this._selectAllBtn = this.container.querySelector('.bulk-select-all-btn');
+    this._selectNoneBtn = this.container.querySelector('.bulk-select-none-btn');
+    this._deleteSelectedBtn = this.container.querySelector(
+      '.bulk-delete-selected-btn',
+    );
 
     // Event listeners
     this._selectBtn.addEventListener('click', () => this._fileInput.click());
@@ -96,6 +115,18 @@ export default class BulkOutput {
     );
     this._listViewBtn.addEventListener('click', () =>
       this._setViewMode('list'),
+    );
+
+    // Selection controls
+    this._selectAllBtn.addEventListener('click', () => this._selectAll());
+    this._selectNoneBtn.addEventListener('click', () => this._selectNone());
+    this._deleteSelectedBtn.addEventListener('click', () =>
+      this._deleteSelected(),
+    );
+
+    // File list click handler for checkboxes
+    this._fileList.addEventListener('click', (e) =>
+      this._onFileListClick(e),
     );
 
     // Drag and drop
@@ -124,23 +155,24 @@ export default class BulkOutput {
 
   _onDragOver(e) {
     e.preventDefault();
-    e.stopPropagation();
     this._dropZone.classList.add('drag-over');
   }
 
   _onDragLeave(e) {
     e.preventDefault();
-    e.stopPropagation();
     this._dropZone.classList.remove('drag-over');
   }
 
   _onDrop(e) {
     e.preventDefault();
-    e.stopPropagation();
+    // Don't stopPropagation - let the event bubble to FileDrop to hide the overlay
     this._dropZone.classList.remove('drag-over');
 
     const files = e.dataTransfer.files;
     if (files.length === 0) return;
+
+    // Mark event as handled by bulk so FileDrop won't also process it
+    e._bulkHandled = true;
 
     const svgFiles = [...files].filter(
       (f) =>
@@ -180,6 +212,8 @@ export default class BulkOutput {
 
   async _loadFilesAndRender() {
     this._fileData.clear();
+    // Select all files by default
+    this._selectedFiles = new Set(this._files.map((f) => f.name));
 
     // Load all file contents for preview
     const loadPromises = this._files.map(async (file) => {
@@ -208,7 +242,10 @@ export default class BulkOutput {
   }
 
   _onProcessClick() {
-    if (this._files.length === 0 || this._processing) return;
+    const selectedFiles = this._files.filter((f) =>
+      this._selectedFiles.has(f.name),
+    );
+    if (selectedFiles.length === 0 || this._processing) return;
 
     this._processing = true;
     this._actions.classList.add('hidden');
@@ -216,7 +253,7 @@ export default class BulkOutput {
     this._processBtn.append(this._spinner.container);
     this._spinner.show();
 
-    this.emitter.emit('processBulk', { files: this._files });
+    this.emitter.emit('processBulk', { files: selectedFiles });
   }
 
   _onDownloadClick() {
@@ -300,6 +337,7 @@ export default class BulkOutput {
 
   reset() {
     this._files = [];
+    this._selectedFiles.clear();
     this._fileData.clear();
     this._results = null;
     this._processing = false;
@@ -336,27 +374,199 @@ export default class BulkOutput {
     this._header.classList.remove('hidden');
     this._actions.classList.remove('hidden');
 
-    this._count.textContent = `${this._files.length} file${
-      this._files.length > 1 ? 's' : ''
-    }`;
+    this._updateCount();
 
     for (const file of this._files) {
       const data = this._fileData.get(file.name);
       const svgContent = data ? data.original : '';
+      const isSelected = this._selectedFiles.has(file.name);
 
-      const item = strToEl(`
-        <div class="bulk-file-item" data-filename="${this._escapeHtml(
-          file.name,
-        )}">
-          <div class="bulk-file-preview">${svgContent}</div>
-          <div class="bulk-file-info">
-            <span class="bulk-file-name">${this._escapeHtml(file.name)}</span>
-            <span class="bulk-file-size">${this._formatSize(file.size)}</span>
-          </div>
-          <span class="bulk-file-status pending"></span>
-        </div>
-      `);
+      const item = strToEl(
+        '<div class="bulk-file-item' +
+          (isSelected ? ' selected' : '') +
+          '" data-filename="' +
+          this._escapeHtml(file.name) +
+          '">' +
+          '<button class="bulk-file-checkbox" type="button" title="Toggle selection">' +
+          '<svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>' +
+          '</button>' +
+          '<div class="bulk-file-preview">' +
+          svgContent +
+          '</div>' +
+          '<div class="bulk-file-info">' +
+          '<span class="bulk-file-name">' +
+          this._escapeHtml(file.name) +
+          '</span>' +
+          '<span class="bulk-file-size">' +
+          this._formatSize(file.size) +
+          '</span>' +
+          '</div>' +
+          '<button class="bulk-file-delete" type="button" title="Remove file">' +
+          '<svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>' +
+          '</button>' +
+          '<span class="bulk-file-status pending"></span>' +
+          '</div>',
+      );
       this._fileList.append(item);
+    }
+  }
+
+  _updateCount() {
+    const selected = this._selectedFiles.size;
+    const total = this._files.length;
+    this._count.textContent = `${selected}/${total} selected`;
+    this._processBtn.textContent =
+      selected === total ? 'Process All' : `Process ${selected} Selected`;
+  }
+
+  _onFileListClick(e) {
+    const checkbox = e.target.closest('.bulk-file-checkbox');
+    const deleteBtn = e.target.closest('.bulk-file-delete');
+    const item = e.target.closest('.bulk-file-item');
+
+    if (!item) return;
+
+    const filename = item.dataset.filename;
+
+    if (checkbox) {
+      this._toggleFileSelection(filename);
+    } else if (deleteBtn) {
+      this._deleteFile(filename);
+    }
+  }
+
+  _toggleFileSelection(filename) {
+    if (this._selectedFiles.has(filename)) {
+      this._selectedFiles.delete(filename);
+    } else {
+      this._selectedFiles.add(filename);
+    }
+    this._updateFileItemSelection(filename);
+    this._updateCount();
+  }
+
+  _updateFileItemSelection(filename) {
+    const item = this._fileList.querySelector(
+      `[data-filename="${CSS.escape(filename)}"]`,
+    );
+    if (item) {
+      item.classList.toggle('selected', this._selectedFiles.has(filename));
+    }
+  }
+
+  _selectAll() {
+    for (const file of this._files) {
+      this._selectedFiles.add(file.name);
+    }
+    this._updateAllSelections();
+    this._updateCount();
+  }
+
+  _selectNone() {
+    this._selectedFiles.clear();
+    this._updateAllSelections();
+    this._updateCount();
+  }
+
+  _updateAllSelections() {
+    const items = this._fileList.querySelectorAll('.bulk-file-item');
+    for (const item of items) {
+      const filename = item.dataset.filename;
+      item.classList.toggle('selected', this._selectedFiles.has(filename));
+    }
+  }
+
+  _deleteFile(filename) {
+    this._files = this._files.filter((f) => f.name !== filename);
+    this._selectedFiles.delete(filename);
+    this._fileData.delete(filename);
+
+    // Also remove from results if it exists
+    if (this._results) {
+      this._results.results = this._results.results.filter(
+        (r) => r.filename !== filename,
+      );
+      this._results.errors = this._results.errors.filter(
+        (e) => e.filename !== filename,
+      );
+    }
+
+    const item = this._fileList.querySelector(
+      `[data-filename="${CSS.escape(filename)}"]`,
+    );
+    if (item) {
+      item.remove();
+    }
+
+    if (this._files.length === 0) {
+      this.reset();
+    } else {
+      this._updateCount();
+      this._updateSummaryAfterDelete();
+    }
+  }
+
+  _deleteSelected() {
+    const toDelete = [...this._selectedFiles];
+    for (const filename of toDelete) {
+      this._deleteFile(filename);
+    }
+  }
+
+  _updateSummaryAfterDelete() {
+    if (!this._results) return;
+
+    const { results, errors } = this._results;
+
+    // If no results left, hide download actions and summary
+    if (results.length === 0 && errors.length === 0) {
+      this._results = null;
+      this._summary.classList.add('hidden');
+      this._downloadActions.classList.add('hidden');
+      this._actions.classList.remove('hidden');
+      return;
+    }
+
+    // Update summary with remaining results
+    if (results.length > 0) {
+      const totalOriginal = results.reduce((sum, r) => sum + r.originalSize, 0);
+      const totalOptimized = results.reduce(
+        (sum, r) => sum + r.optimizedSize,
+        0,
+      );
+      const totalReduction =
+        totalOriginal > 0
+          ? Math.round((1 - totalOptimized / totalOriginal) * 100)
+          : 0;
+
+      this._summary.innerHTML =
+        '<div class="bulk-summary-row">' +
+        '<span>Files optimized:</span>' +
+        '<strong>' +
+        results.length +
+        '</strong>' +
+        '</div>' +
+        (errors.length > 0
+          ? '<div class="bulk-summary-row error"><span>Failed:</span><strong>' +
+            errors.length +
+            '</strong></div>'
+          : '') +
+        '<div class="bulk-summary-row">' +
+        '<span>Total size:</span>' +
+        '<strong>' +
+        this._formatSize(totalOriginal) +
+        ' → ' +
+        this._formatSize(totalOptimized) +
+        '</strong>' +
+        '</div>' +
+        '<div class="bulk-summary-row highlight">' +
+        '<span>Saved:</span>' +
+        '<strong>' +
+        this._formatSize(totalOriginal - totalOptimized) +
+        ' (' +
+        totalReduction +
+        '%)</strong>' +
+        '</div>';
     }
   }
 

@@ -61,6 +61,11 @@
       "enabledByDefault": true
     },
     {
+      "id": "prefixIds",
+      "name": "Prefix IDs (prevent conflicts)",
+      "enabledByDefault": false
+    },
+    {
       "id": "removeRasterImages",
       "name": "Remove raster images",
       "enabledByDefault": false

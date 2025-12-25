@@ -11,7 +11,6 @@ const expectedCaches = new Set([staticCacheName, fontCacheName]);
 addEventListener('install', (event) => {
   event.waitUntil(
     (async () => {
-      const activeVersionPromise = storage.get('active-version');
       const cache = await caches.open(staticCacheName);
 
       await cache.addAll([
@@ -27,15 +26,8 @@ addEventListener('install', (event) => {
         'test-svgs/car-lite.svg',
       ]);
 
-      const activeVersion = await activeVersionPromise;
-
-      // If it's a major version change, don't skip waiting
-      if (
-        !activeVersion ||
-        activeVersion.split('.')[0] === version.split('.')[0]
-      ) {
-        self.skipWaiting();
-      }
+      // Always skip waiting to activate new SW immediately
+      self.skipWaiting();
     })(),
   );
 });
@@ -57,6 +49,9 @@ addEventListener('activate', (event) => {
       );
 
       await storage.set('active-version', version);
+
+      // Take control of all clients immediately
+      await self.clients.claim();
     })(),
   );
 });
