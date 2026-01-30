@@ -11,9 +11,9 @@ export default {
     }
 
     return new HTMLRewriter()
-      .on('head', {
+      .on('title', {
         element(el) {
-          el.append(
+          el.after(
             `<script src="${env.ANALYTICS_SCRIPT_URL}" data-site-id="${env.ANALYTICS_SITE_ID}" defer></script>`,
             { html: true },
           );
